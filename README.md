@@ -1,56 +1,78 @@
-🛠️ Multi-Language Backend API (PHP • Python • Go)
-This project is a backend API implemented in three languages—PHP, Python, and Go—to build cross-language backend engineering skills. The core goal is to learn and master authentication flows, secure token handling, and RESTful design.
+# 🛠️ Multi-Language Token Authentication API  
 
-🔐 Features
-Secure login with password hashing
+This project is the same backend API built **three times** — in **PHP**, **Python**, and **Go**.  
+The goal is to learn backend engineering across different languages while keeping the design consistent.  
 
-JWT-based access tokens (1-hour expiry)
+It focuses on one of the most important backend concepts:  
+👉 **secure login and token-based authentication**.  
 
-Refresh token implementation with secure cookies
+---
 
-Middleware for protecting routes
+## 🔑 What It Does  
 
-SQLite as a lightweight backend DB
+- Users can **log in with a username & password**  
+- On login, the system provides:  
+  - a **short-lived access token** (valid for 1 hour)  
+  - a **refresh token** (stored safely in a cookie)  
+- The **access token** is used for protected API routes  
+- When it expires, you can **refresh** with the cookie to get a new one  
+- All three languages (PHP, Python, Go) use the **same structure** so you can compare them side by side  
 
-API versioning structure (/api/v1/...)
+---
 
-Consistent design replicated in PHP, Python, and Go
+## 🚀 Tech Stack  
 
-🚀 Technologies
-Language	Framework	Auth Library	DB
-PHP	Slim Framework	firebase/php-jwt	SQLite
-Python                              	SQLite
-Go                                  	SQLite
+| Language | Framework/Library            | Database |
+|----------|------------------------------|-----------|
+| PHP      | Slim Framework + firebase/php-jwt | SQLite |
+| Python   | Standard libraries (minimal) | SQLite |
+| Go       | Standard libraries (minimal) | SQLite |
 
-🧪 Authentication Flow
-Login (POST /api/v1/auth/login)
+---
 
-Validates credentials
+## 📂 API Overview  
 
-Returns JWT (in body) and sets Refresh Token in an HttpOnly cookie
+- **Login** → `POST /api/v1/auth/login`  
+  - Validates user credentials  
+  - Returns access token + sets refresh cookie  
 
-Token Refresh (POST /api/v1/refresh)
+- **Refresh Token** → `POST /api/v1/auth/refresh`  
+  - Reads refresh cookie  
+  - Returns a new access token + new refresh cookie  
 
-Reads the refresh token from cookie
+- **Protected Routes**  
+  - Can only be accessed with a valid access token  
 
-Issues a new JWT and refresh token
+---
 
-Protected Endpoints
+## 🛡️ Security Basics  
 
-Use middleware to validate JWT
+- Refresh tokens stored in **secure, HttpOnly cookies**  
+- Tokens are **rotated** (new one on every refresh)  
+- Passwords stored using **strong hashing**  
 
-🛡️ Security Notes
-Refresh token is stored as HttpOnly, Secure, SameSite=Strict
+---
 
-Tokens are rotated on each refresh (single-use refresh pattern)
+## 🌱 Future Additions  
 
-Passwords stored with password_hash and verified via password_verify (PHP) or equivalents
+- Logout & token blacklisting  
+- Role-based access control (e.g., admin vs. user)  
+- Support for **PASETO** tokens  
+- Use PostgreSQL or MySQL for production setups  
 
-🔄 Future Improvements
-Token revocation / blacklisting
+---
 
-Role-based access control (RBAC)
+## 📊 Authentication Flow  
 
-Optional PASETO support for more secure token handling
+```mermaid
+flowchart TD
+    A[User Login Request] --> B[Validate Username & Password]
+    B -->|Valid| C[Issue Access Token + Refresh Cookie]
+    B -->|Invalid| Z[Return Error]
 
-Support for PostgreSQL or MySQL in production setups
+    C --> D[Access Protected API]
+    D -->|Token Valid| E[Allow Access]
+    D -->|Token Expired| F[Use Refresh Cookie]
+
+    F --> G[Issue New Access Token + New Refresh Cookie]
+    G --> D
