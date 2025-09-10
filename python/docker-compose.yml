@@ -1,0 +1,11 @@
+services:
+  flask:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app:/app/app
+      - ./db.sqlite:/app/db.sqlite
+      - ./.env:/app/.env
+    environment:
+      - FLASK_ENV=development

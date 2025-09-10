@@ -36,7 +36,7 @@ $app->group('/api/v1/auth', function (RouteCollectorProxy $group) {
                 'error' => true,
                 'message' => "User does not exist.",
             ];
-            $response->getBody()->write(json_encode($data ?? []));
+            $response->getBody()->write(json_encode($data));
             $response->withHeader('Content-Type', 'application/json');
             return $response->withStatus(404);
         endif;
@@ -44,11 +44,11 @@ $app->group('/api/v1/auth', function (RouteCollectorProxy $group) {
         if (!\password_verify($password, $user['password_hash'])):
             $data = [
                 'error' => true,
-                'message' => "Incorrect password.",
+                'message' => "Invalid password.",
             ];
             $response->getBody()->write(json_encode($data ?? []));
             $response->withHeader('Content-Type', 'application/json');
-            return $response->withStatus(400);
+            return $response->withStatus(401);
         endif;
 
         $data = [
@@ -70,11 +70,19 @@ $app->group('/api/v1/auth', function (RouteCollectorProxy $group) {
         if ($user_refresh_token):
             $q = "UPDATE refresh_tokens SET token = :token, `expiry_timestamp` = :expiry_timestamp WHERE user_id = :user_id;";
             $smnt = $db->prepare($q);
-            $smnt->execute([':user_id' => $user['id'], ':token' => $refresh_token, ':expiry_timestamp' => \date('Y-m-d H:i:s', strtotime('+7 days'))]);
+            $smnt->execute([
+                ':user_id' => $user['id'],
+                ':token' => $refresh_token,
+                ':expiry_timestamp' => \date('Y-m-d H:i:s', strtotime('+30 days'))
+            ]);
         else:
             $q = "INSERT INTO refresh_tokens (user_id, token, `expiry_timestamp`) VALUES (:user_id, :token, :expiry_timestamp);";
             $smnt = $db->prepare($q);
-            $smnt->execute([':user_id' => $user['id'], ':token' => $refresh_token, ':expiry_timestamp' => \date('Y-m-d H:i:s', strtotime('+7 days'))]);
+            $smnt->execute([
+                ':user_id' => $user['id'],
+                ':token' => $refresh_token,
+                ':expiry_timestamp' => \date('Y-m-d H:i:s', strtotime('+30 days'))
+            ]);
         endif;
 
         $response->getBody()->write(\json_encode($data));
